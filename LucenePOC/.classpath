@@ -1,29 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_67"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring"/>
-	<classpathentry kind="lib" path="C:/openSource/lucene-5.5.0/core/lucene-core-5.5.0.jar" sourcepath="C:/openSource/lucene-5.5.0/core">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/openSource/lucene-5.5.0/docs/core"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/openSource/lucene-5.5.0/analysis/common/lucene-analyzers-common-5.5.0.jar" sourcepath="C:/openSource/lucene-5.5.0/analysis/common">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/openSource/lucene-5.5.0/docs/analyzers-common"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/openSource/lucene-5.5.0/queryparser/lucene-queryparser-5.5.0.jar" sourcepath="C:/openSource/lucene-5.5.0/queryparser">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/openSource/lucene-5.5.0/docs/queryparser/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/openSource/lucene-5.5.0/analysis/smartcn/lucene-analyzers-smartcn-5.5.0.jar" sourcepath="C:/openSource/lucene-5.5.0/analysis/smartcn">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/openSource/lucene-5.5.0/docs/analyzers-smartcn/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/junit"/>
-	<classpathentry kind="lib" path="C:/openSource/tika/tika-server-1.12.jar" sourcepath="C:/openSource/tika/tika-1.12-src.zip"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7/"/>
+	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 @Configuration
-@PropertySource(value = "classpath:resources/lucene.properties", ignoreResourceNotFound=false)
+@PropertySource(value = "classpath:lucene.properties", ignoreResourceNotFound=false)
 public class LucenePropertiesConfigure {
 	@Autowired
 	private Environment env;

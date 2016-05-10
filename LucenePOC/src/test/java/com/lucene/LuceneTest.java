@@ -1,4 +1,4 @@
-package com.lucene.test;
+package com.lucene;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,13 +37,13 @@ public class LuceneTest {
 
 	@Autowired
 	private LuceneServiceImpl luceneService;
-	
+
 	@Autowired
 	private LuceneNRTServiceImpl luceneNRTService;
-	
+
 	private Map<Document, Float> docs;
 
-//	@Test
+	// @Test
 	public void doIndex() {
 		File indexDir = new File(properties.getIndexDir());
 		for (File f : indexDir.listFiles()) {
@@ -51,18 +51,18 @@ public class LuceneTest {
 		}
 		luceneService.doIndex(new File(properties.getDocDir()));
 	}
-	
-//	@Test
+
+	// @Test
 	public void searchByTerm() {
 		docs = luceneService.searchByTerm("fileName", "SortedDocValuesField", 100);
 	}
-	
-//	@Test
+
+	// @Test
 	public void searchByTermRange() {
 		docs = luceneService.searchByTermRange("fileName", "We", "Wf", 100);
 	}
-	
-//	@Test
+
+	// @Test
 	public void searchByQueryParse() {
 		try {
 			QueryParser parser = new QueryParser("fileSuffix", new StandardAnalyzer());
@@ -73,8 +73,8 @@ public class LuceneTest {
 			Assert.fail(e.getMessage());
 		}
 	}
-	
-//	@Test
+
+	// @Test
 	public void ignoreScoreSearch() {
 		try {
 			QueryParser parser = new QueryParser("fileSuffix", new StandardAnalyzer());
@@ -86,8 +86,8 @@ public class LuceneTest {
 			Assert.fail(e.getMessage());
 		}
 	}
-	
-//	@Test
+
+	// @Test
 	public void searchMultiByField() {
 		List<List<String>> fieldsQuery = new ArrayList<List<String>>();
 		List<String> fieldQueries = new ArrayList<String>();
@@ -100,8 +100,8 @@ public class LuceneTest {
 		fieldsQuery.add(fieldQueries);
 		docs = luceneService.searchMultiByField(fieldsQuery, 100);
 	}
-	
-//	@Test
+
+	// @Test
 	public void searchMultiByTerms() {
 		List<List<String>> fieldsQuery = new ArrayList<List<String>>();
 		List<String> fieldQueries = new ArrayList<String>();
@@ -114,18 +114,18 @@ public class LuceneTest {
 		fieldsQuery.add(fieldQueries);
 		docs = luceneService.searchMultiByTerms(fieldsQuery, 100);
 	}
-	
-//	@Test
+
+	// @Test
 	public void searchPageByAfter1() {
 		docs = luceneService.searchPageByAfter("lucene", 1, 20);
 	}
-	
-//	@Test
+
+	// @Test
 	public void searchPageByAfter2() {
 		docs = luceneService.searchPageByAfter("lucene", 2, 20);
 	}
-	
-//	@Test
+
+	// @Test
 	public void doIndexNRT() {
 		luceneNRTService.deleteAll();
 		try {
@@ -135,29 +135,33 @@ public class LuceneTest {
 			Assert.fail(e.getMessage());
 		}
 	}
-	
-//	@Test
-	public void doUpdate() throws Exception {
-		luceneNRTService.update(new File("C:/Users/IBM_ADMIN/Desktop/ISG/Lucene54Codec1.html"));
+
+	@Test
+	public void doIndexAndUpdate() throws Exception {
+		luceneNRTService.deleteAll();
+		luceneNRTService.getFileCount(new File(properties.getDocDir()));
+		luceneNRTService.update(new File(properties.getDocDir()));
 	}
-	
+
 	@Test
 	public void searchPageByMultiField() {
 		Map<BooleanClause.Occur, Map<String, String>> queries = new HashMap<BooleanClause.Occur, Map<String, String>>();
 		Map<String, String> fields = new HashMap<String, String>();
-		/*fields.put("content", "color");
-		queries.put(BooleanClause.Occur.MUST, fields);
-		
-		fields = new HashMap<String, String>();
-		fields.put("content", "performan?? dimen?ion di*ent");
-		queries.put(BooleanClause.Occur.MUST_NOT, fields);
-		
-		fields = new HashMap<String, String>();*/
-//		fields.put("fileName", "Analyzer Plane closeIndexTask");
-//		fields.put("fileSuffix", "html js");
-//		fields.put("name", "industry");
+		/*
+		 * fields.put("content", "color"); queries.put(BooleanClause.Occur.MUST,
+		 * fields);
+		 * 
+		 * fields = new HashMap<String, String>(); fields.put("content",
+		 * "performan?? dimen?ion di*ent");
+		 * queries.put(BooleanClause.Occur.MUST_NOT, fields);
+		 * 
+		 * fields = new HashMap<String, String>();
+		 */
+		fields.put("fileName", "Analyzer Plane closeIndexTask");
+		fields.put("fileSuffix", "html js");
+		fields.put("name", "industry");
 		queries.put(BooleanClause.Occur.SHOULD, fields);
-		
+
 		try {
 			docs = luceneNRTService.searchPageByMultiField(queries, 1, 20);
 		} catch (Exception e) {
@@ -165,19 +169,21 @@ public class LuceneTest {
 			Assert.fail(e.getMessage());
 		}
 	}
-	
+
 	@Before
 	public void query() {
 		luceneNRTService.query();
 	}
-	
+
 	@After
 	public void printDocs() {
-		if (docs == null) return;
+		if (docs == null)
+			return;
 		for (Document document : docs.keySet()) {
-			System.out.println("id: " + document.get("id") + "	score: " + docs.get(document) + "	path: " + document.get("path"));
+			System.out.println(
+					"id: " + document.get("id") + "	score: " + docs.get(document) + "	path: " + document.get("path"));
 		}
 		System.out.println("The number of results: " + docs.size() + "\n");
 	}
-	
+
 }

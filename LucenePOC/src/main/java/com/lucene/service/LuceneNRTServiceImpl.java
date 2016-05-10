@@ -181,6 +181,8 @@ public class LuceneNRTServiceImpl {
 			// 更新文档到索引
 			try {
 				targetGen = trackingIndexWriter.updateDocument(new Term("id", file.getName()), doc);
+				if (fileNum % 10 == 0) System.out.println();
+				System.out.print(fileNum++ + "/" + fileCount + "	");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -427,7 +429,7 @@ public class LuceneNRTServiceImpl {
 		return indexSearcher;
 	}
 	
-	private void getFileCount(File file) throws Exception {
+	public void getFileCount(File file) throws Exception {
 		validateExists(file);
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
