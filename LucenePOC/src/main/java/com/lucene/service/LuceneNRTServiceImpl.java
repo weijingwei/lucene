@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
@@ -98,7 +99,6 @@ public class LuceneNRTServiceImpl {
 		try {
 			getFileCount(indexPath);
 			addDocument(indexPath);
-			System.out.println("\nIndex finished.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -108,6 +108,7 @@ public class LuceneNRTServiceImpl {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			System.out.println("\nIndex finished.");
 		}
 	}
 	
@@ -147,17 +148,17 @@ public class LuceneNRTServiceImpl {
 	
 	/**
 	 * 修改document，不需要关闭writer。实际是先删除再添加
-	 * @param fields(id, oid, path, fileName, fileSuffix)
+	 * @param fields(id, path, fileName, fileSuffix)
 	 */
 	public void update(Map<String, String> fields) {
 		Document doc = new Document();
 		try {
-			doc.add(new StringField("id", fields.get("id"), Field.Store.YES));
+			doc.add(new StringField("id", fields.get("id"), Field.Store.NO));
 			doc.add(new StringField("path", fields.get("path"), Field.Store.YES));
 			doc.add(new StringField("fileName", fields.get("fileName"), Field.Store.YES));
 			doc.add(new StringField("fileSuffix", fields.get("fileSuffix"), Field.Store.YES));
 			doc.add(new TextField("content", new FileReader(new File(fields.get("path")))));
-			targetGen = trackingIndexWriter.updateDocument(new Term("id", fields.get("oid")), doc);
+			targetGen = trackingIndexWriter.updateDocument(new Term("id", fields.get("id")), doc);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -173,7 +174,7 @@ public class LuceneNRTServiceImpl {
 			// 创建Document
 			Document doc = new Document();
 			// 添加Field
-			doc.add(new StringField("id", file.getName(), Field.Store.YES));
+			doc.add(new StringField("id", file.getName(), Field.Store.NO));
 			doc.add(new StringField("path", file.getPath(), Field.Store.YES));
 			doc.add(new StringField("fileName", file.getName().replace("." + getFileType(file), "").toLowerCase(), Field.Store.YES));
 			doc.add(new StringField("fileSuffix", getFileType(file), Field.Store.YES));
@@ -181,7 +182,7 @@ public class LuceneNRTServiceImpl {
 			// 更新文档到索引
 			try {
 				targetGen = trackingIndexWriter.updateDocument(new Term("id", file.getName()), doc);
-				if (fileNum % 10 == 0) System.out.println();
+//				if (fileNum % 10 == 0) System.out.println();
 				System.out.print(fileNum++ + "/" + fileCount + "	");
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -384,10 +385,10 @@ public class LuceneNRTServiceImpl {
 			// 创建Document
 			Document doc = new Document();
 			// 添加Field
-//			doc.add(new StringField("id", file.getName(), Field.Store.YES));
-			doc.add(new StringField("path", file.getPath(), Field.Store.YES));
-			doc.add(new StringField("fileName", file.getName().replace("." + getFileType(file), "").toLowerCase(), Field.Store.YES));
-			doc.add(new StringField("fileSuffix", getFileType(file), Field.Store.YES));
+			doc.add(new StringField("id", file.getName(), Store.NO));
+			doc.add(new StringField("path", file.getPath(), Store.YES));
+			doc.add(new StringField("fileName", file.getName().replace("." + getFileType(file), "").toLowerCase(), Store.YES));
+			doc.add(new StringField("fileSuffix", getFileType(file), Store.YES));
 			doc.add(new TextField("content", new FileReader(file)));
 			// 添加文档到索引
 			try {

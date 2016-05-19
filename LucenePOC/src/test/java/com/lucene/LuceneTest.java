@@ -125,9 +125,9 @@ public class LuceneTest {
 		docs = luceneService.searchPageByAfter("lucene", 2, 20);
 	}
 
-	// @Test
+	 @Test
 	public void doIndexNRT() {
-		luceneNRTService.deleteAll();
+//		luceneNRTService.deleteAll();
 		try {
 			luceneNRTService.doIndex(new File(properties.getDocDir()));
 		} catch (Exception e) {
@@ -138,7 +138,7 @@ public class LuceneTest {
 
 	@Test
 	public void doIndexAndUpdate() throws Exception {
-		luceneNRTService.deleteAll();
+//		luceneNRTService.deleteAll();
 		luceneNRTService.getFileCount(new File(properties.getDocDir()));
 		luceneNRTService.update(new File(properties.getDocDir()));
 	}
@@ -163,7 +163,7 @@ public class LuceneTest {
 		queries.put(BooleanClause.Occur.SHOULD, fields);
 
 		try {
-			docs = luceneNRTService.searchPageByMultiField(queries, 1, 20);
+			docs = luceneNRTService.searchPageByMultiField(queries, 1, 10);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
@@ -173,15 +173,16 @@ public class LuceneTest {
 	@Before
 	public void query() {
 		luceneNRTService.query();
+		System.out.println();
 	}
 
 	@After
 	public void printDocs() {
 		if (docs == null)
 			return;
+		System.out.println();
 		for (Document document : docs.keySet()) {
-			System.out.println(
-					"id: " + document.get("id") + "	score: " + docs.get(document) + "	path: " + document.get("path"));
+			System.out.println("score: " + docs.get(document) + "	path: " + document.get("path"));
 		}
 		System.out.println("The number of results: " + docs.size() + "\n");
 	}
