@@ -21,6 +21,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
 import org.apache.lucene.search.IndexSearcher;
@@ -29,6 +30,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
@@ -230,6 +232,75 @@ public class LuceneServiceImpl {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		return results;
+	}
+	
+	public Map<Document, Float> search(Map<Occur, Map<String, String>> queries, int pageNum, int pageSize) throws Exception {
+		Map<Document, Float> results = new LinkedHashMap<Document, Float>();
+		IndexSearcher indexSearcher = getSearcher();
+		Builder occurBuilder = new BooleanQuery.Builder();
+		Builder shouldOccurBuilder = null;
+		Builder mustOccurBuilder = null;
+		if (queries.containsKey(Occur.MUST_NOT)) {
+			Map<String, String> fields = queries.get(Occur.MUST_NOT);
+			for (String field : fields.keySet()) {
+				String[] keywords = fields.get(field).trim().split("\\s+");
+				for (String keyword : keywords) {
+					WildcardQuery query = new WildcardQuery(new Term(field, keyword.toLowerCase()));
+					occurBuilder.add(query, Occur.MUST_NOT);
+				}
+			}
+		}
+
+		if (queries.containsKey(Occur.SHOULD)) {
+			shouldOccurBuilder = new BooleanQuery.Builder();
+			Map<String, String> shouldFields = queries.get(Occur.SHOULD);
+			for (String shouldField : shouldFields.keySet()) {
+				String[] shouldKeywords = shouldFields.get(shouldField).trim().split("\\s+");
+				for (String shouldKeyword : shouldKeywords) {
+					WildcardQuery shouldQuery = new WildcardQuery(new Term(shouldField, "*" + shouldKeyword.toLowerCase() + "*"));
+					shouldOccurBuilder.add(shouldQuery, Occur.SHOULD);
+				}
+			}
+			// Each "MUST" condition is appended to a set of "SHOULD" conditions
+			if (queries.containsKey(Occur.MUST) && queries.get(Occur.MUST).size() > 0) {
+				Map<String, String> mustFields = queries.get(Occur.MUST);
+				for (String mustField : mustFields.keySet()) {
+					WildcardQuery mustQuery = new WildcardQuery(new Term(mustField, "*" + mustFields.get(mustField).trim().toLowerCase() + "*"));
+					mustOccurBuilder = new BooleanQuery.Builder();
+					mustOccurBuilder.add(mustQuery, Occur.MUST);
+					BooleanQuery mustOccurQuery = mustOccurBuilder.build();
+					occurBuilder.add(mustOccurQuery, Occur.SHOULD);
+				}
+			}
+			BooleanQuery shouldOccurQuery = shouldOccurBuilder.build();
+			occurBuilder.add(shouldOccurQuery, Occur.MUST);
+		} else if (queries.containsKey(Occur.MUST) && queries.get(Occur.MUST).size() > 0) {
+			Map<String, String> mustFields = queries.get(Occur.MUST);
+			for (String mustField : mustFields.keySet()) {
+				WildcardQuery mustQuery = new WildcardQuery(new Term(mustField, "*" + mustFields.get(mustField).trim().toLowerCase() + "*"));
+				mustOccurBuilder = new BooleanQuery.Builder();
+				mustOccurBuilder.add(mustQuery, Occur.MUST);
+				BooleanQuery mustOccurQuery = mustOccurBuilder.build();
+				occurBuilder.add(mustOccurQuery, Occur.SHOULD);
+			}
+		}
+
+		BooleanQuery query = occurBuilder.build();
+		TopDocs tds;
+		if (pageSize != 0 && pageNum != 0) {
+			// Get the last doc of the previous page
+			ScoreDoc lastSd = getLastScoreDoc(pageNum, pageSize, query, indexSearcher);
+			// Search the next page of the docs, through the last doc
+			tds = indexSearcher.searchAfter(lastSd, query, pageSize);
+		} else {
+			// Search top 1000 docs if there are no pageSize and pageNum provided.
+			tds = indexSearcher.search(query, 1000);
+		}
+		for (ScoreDoc sd : tds.scoreDocs) {
+			Document doc = indexSearcher.doc(sd.doc);
+			results.put(doc, sd.score);
 		}
 		return results;
 	}
