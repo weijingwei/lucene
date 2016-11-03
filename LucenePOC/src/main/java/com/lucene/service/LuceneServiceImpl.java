@@ -295,8 +295,9 @@ public class LuceneServiceImpl {
 			// Search the next page of the docs, through the last doc
 			tds = indexSearcher.searchAfter(lastSd, query, pageSize);
 		} else {
-			// Search top 1000 docs if there are no pageSize and pageNum provided.
-			tds = indexSearcher.search(query, 1000);
+			// Search top all docs if there are no pageSize and pageNum provided.
+			int count = indexSearcher.count(query);
+			tds = indexSearcher.search(query, count > 0 ? count : 1);
 		}
 		for (ScoreDoc sd : tds.scoreDocs) {
 			Document doc = indexSearcher.doc(sd.doc);
