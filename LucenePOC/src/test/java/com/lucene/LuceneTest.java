@@ -3,8 +3,11 @@ package com.lucene;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -12,9 +15,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.lucene.Main;
 import com.lucene.config.LucenePropertiesConfigure;
 import com.lucene.service.LuceneNRTServiceImpl;
 import com.lucene.service.LuceneServiceImpl;
@@ -170,13 +170,13 @@ public class LuceneTest {
 		}
 	}
 
-	@Before
+//	@Before
 	public void query() {
 		luceneNRTService.query();
 		System.out.println();
 	}
 
-	@After
+//	@After
 	public void printDocs() {
 		if (docs == null)
 			return;
@@ -185,6 +185,36 @@ public class LuceneTest {
 			System.out.println("score: " + docs.get(document) + "	path: " + document.get("path"));
 		}
 		System.out.println("The number of results: " + docs.size() + "\n");
+	}
+	
+	@Test
+	public void analyzeParentheses() {
+		String keywords = "a	b (c d( e f   ) g )h i j k (  @@filter##$$fd   @@filter##fd)l m(n o p(	@@filter##)	s t)u v)w x y z";
+		System.out.println(keywords);
+		Pattern p = Pattern.compile("\\([^()]+\\)");
+		Map<String, String> parentheses = analyzeParentheses(keywords, p, 0);
+		for (String key : parentheses.keySet()) {
+			System.out.println("key: " + key + " word: " + parentheses.get(key));
+		}
+	}
+
+	private Map<String, String> analyzeParentheses(String keywords, Pattern p, int index) {
+		Map<String, String> results = new LinkedHashMap<String, String>();
+		Matcher m=p.matcher(keywords);
+		boolean isExist = false;
+        while(m.find()){
+        	isExist = true;
+        	String keyword = m.group();
+        	String key = "PARENTHESE_" + index++;
+        	keywords = keywords.replace(keyword, " " + key + " ").replaceAll("\\s+", " ");
+        	results.put(key, keyword.replace("(", "").replace(")", "").trim());
+        }
+        if (isExist) {
+        	results.putAll(analyzeParentheses(keywords, p, index));
+        } else {
+        	results.put("PARENTHESE_" + index, keywords);
+        }
+        return results;
 	}
 
 }
